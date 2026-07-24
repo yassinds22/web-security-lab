@@ -18,9 +18,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              */
             $query = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
             
-            // تنفيذ الاستعلام مباشرة (غير آمن)
+            // تنفيذ الاستعلام مباشرة (غير آمن - يسمح بـ SQL Injection)
             $result = $pdo->query($query);
-            $user_info = $result->fetch();
+            $user_info = $result ? $result->fetch() : null;
+
+            // إذا لم ينطبق الاستعلام المباشر (لأن كلمة المرور في القاعدة مشفرة)، نتحقق من التشفير للدخول العادي
+            if (!$user_info && !empty($username)) {
+                try {
+                    $check_stmt = $pdo->prepare("SELECT * FROM users WHERE username = :u");
+                    $check_stmt->execute([':u' => $username]);
+                    $candidate = $check_stmt->fetch();
+                    if ($candidate && password_verify($password, $candidate['password'])) {
+                        $user_info = $candidate;
+                    }
+                } catch (PDOException $e) {}
+            }
 
             if ($user_info) {
                 $_SESSION['user'] = $username;

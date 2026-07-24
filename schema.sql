@@ -14,8 +14,8 @@ CREATE TABLE users (
 );
 
 -- Insert sample users
--- Password for 'admin' is: AdminPass123!
--- Password for 'student' is: StudentPass123!
+-- Password for 'admin' is: admin123
+-- Password for 'student' is: student123
 INSERT INTO users (username, email, password, role) VALUES
-('admin', 'admin@lab.local', '$2y$10$wE9r7tC9A5XGk8M1N2O3P.qR4S5T6U7V8W9X0Y1Z2A3B4C5D6E7F8', 'administrator'),
-('student', 'student@lab.local', '$2y$10$Z1Y0X9W8V7U6T5S4R3Q2P.O1N0M9L8K7J6I5H4G3F2E1D0C9B8', 'user');
+('admin', 'admin@lab.local', '$2y$10$Xdwnkj5UTYZyTV3Y4HjHKOBe49hgpygUKD5cYEpnv0JGqOgIqw/GG', 'administrator'),
+('student', 'student@lab.local', '$2y$10$B5oRYC4Qgg3DoS2USxcFHuqqjizNnZlAL/Y7TctJcxdfR3psNczXC', 'user');
