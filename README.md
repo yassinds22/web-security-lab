@@ -1,6 +1,6 @@
 # المختبر التعليمي لأمن الويب (PHP Security Educational Lab)
 
-تطبيق تعليمي تفاعلي بلغة PHP يهدف إلى شرح وتوضيح الفرق بين التعامل غير الآمن مع المدخلات (المسبب لثغرات **SQL Injection** و **XSS**) والتعامل الآمن باستخدام **PDO Prepared Statements** وتشفير الـ HTML.
+تطبيق تعليمي تفاعلي بلغة PHP يهدف إلى شرح وتوضيح الفرق بين التعامل غير الآمن مع المدخلات (المسبب لثغرات **SQL Injection** و **XSS**) والتعامل الآمن باستخدام **PDO Prepared Statements** وتشفير الـ HTML وتجزئة كلمات المرور.
 
 ---
 
@@ -103,20 +103,61 @@ SELECT * FROM users WHERE username = '$username' AND password = '$password'
 
 ---
 
-## 🛡️ كيف تتم الحماية في الوضع الآمن (Secure Mode)؟
+## 🛡️ آليات وطرق الحماية المطبقة بالمشروع (Security Defense Mechanisms)
 
-1. **ضد SQL Injection:**
-   استخدام الجمل المجهزة (Prepared Statements):
-   ```php
-   $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
-   $stmt->execute([':username' => $username]);
-   ```
-2. **ضد XSS:**
-   تشفير وترميز جميع المخرجات النصية المطبوعة للمستخدم:
-   ```php
-   $safe_username = htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8');
-   echo "أهلاً بك " . $safe_username;
-   ```
+تمت إضافة وتطبيق 4 آليات أساسية لتأمين المشروع بالكامل في **الوضع الآمن (Secure Mode)**:
+
+### 1️⃣ الحماية من حقن SQL باستخدام Prepared Statements
+- **الآلية:** فصل كود الاستعلام البرمجي عن البيانات القادمة من المستخدم باستخدام `PDO Prepared Statements` والـ Placeholders `:username`.
+- **لماذا تمنع الثغرة؟** يضمن محرك قواعد البيانات معاملة مدخلات المستخدم على أنها قيم نصية (Literal Data) فقط، حتى لو احتوت على رموز SQL خبيثة مثل `'` أو `--`.
+- **الكود المطبق:**
+  ```php
+  $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
+  $stmt->execute([':username' => $username]);
+  $user = $stmt->fetch();
+  ```
+
+---
+
+### 2️⃣ الحماية من ثغرات XSS باستخدام HTML Entity Encoding
+- **الآلية:** معالجة وتشفير جميع النصوص المخرجة المطبوعة في المتصفح باستخدام دالة `htmlspecialchars()`.
+- **لماذا تمنع الثغرة؟** تحول الرموز الخاصة بالسكربتات (`<`, `>`, `"`, `'`, `&`) إلى كيانات نصية آمنة (مثل `&lt;` و `&gt;`)، فيعرض المتصفح النص كما هو بدلاً من تشغيله ككود JavaScript.
+- **الكود المطبق:**
+  ```php
+  $safe_username = htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8');
+  echo "أهلاً بك " . $safe_username;
+  ```
+
+---
+
+### 3️⃣ تشفير كلمات المرور باستخدام خوارزميات التجزئة (Password Hashing)
+- **الآلية:** عدم حفظ كلمات المرور بنصوص مجردة (Plaintext) إطلاقاً، واستخدام خوارزمية **Bcrypt** آمنة مع `password_hash()` و `password_verify()`.
+- **لماذا تمنع الثغرة؟** في حال تسربت قاعدة البيانات، لا يمكن للمخترق معرفة كلمات المرور الأصلية، كما تمنع هجمات التخمين والجداول المسبقة (Rainbow Tables) لوجود Salt عشوائي مدمج تلقائياً.
+- **الكود المطبق:**
+  ```php
+  // عند الإنشاء أو التخزين
+  $hash = password_hash('admin123', PASSWORD_BCRYPT);
+
+  // عند التحقق في الدخول
+  if ($user && password_verify($password, $user['password'])) {
+      // تسجيل دخول آمن ناجح
+  }
+  ```
+
+---
+
+### 4️⃣ إدارة الجلسات الآمنة وتدميرها (Secure Session Management)
+- **الآلية:** التحكم في بدء وإنهاء الجلسات عبر `session_start()` وتدمير البيانات والمُعرّفات بالكامل في `logout.php` بـ `session_destroy()` و `session_unset()`.
+- **لماذا تمنع الثغرة؟** تمنع هجمات تبيث الجلسة (Session Fixation) وتسريب بيانات المستخدمين بعد الخروج.
+- **الكود المطبق:**
+  ```php
+  // logout.php
+  session_start();
+  session_unset();
+  session_destroy();
+  header('Location: index.php');
+  exit();
+  ```
 
 ---
 
