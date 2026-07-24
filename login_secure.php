@@ -75,11 +75,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST" action="login_secure.php">
                 <div class="form-group">
                     <label for="username">اسم المستخدم:</label>
-                    <input type="text" id="username" name="username" class="form-control" placeholder="أدخل اسم المستخدم" required>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="أدخل اسم المستخدم" >
                 </div>
                 <div class="form-group">
                     <label for="password">كلمة المرور:</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="أدخل كلمة المرور" required>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="أدخل كلمة المرور" >
                 </div>
                 <button type="submit" class="btn-submit btn-success">تسجيل الدخول (آمن)</button>
             </form>
